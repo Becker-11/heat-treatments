@@ -30,6 +30,7 @@ def u_integrand(s, t, x):
     return (u0 * k(T) * np.exp(-k(T) * t) / np.sqrt(np.pi * D(T) * (t - s))) * np.exp(-x**2 / (4 * D(T) * (t - s)))
 
 
+
 def c(x, t):
     return u(x,t) + v(x,t)
 
