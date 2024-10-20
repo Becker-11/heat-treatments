@@ -50,6 +50,8 @@ def plot_oxygen_concentration(x_range, t_values):
     for t_value in t_values:
         concentration_values = [c(x, t_value) for x in x_values]
         plt.plot(x_values, concentration_values, label=f't={t_value/3600:.1f} h')
+        plt.plot(x_values, [u(x, t_value) for x in x_values], label=f'u(x,t), t={t_value/3600:.1f} h')
+        plt.plot(x_values, v(x_values, t_value) , label=f'v(x,t), t={t_value/3600:.1f} h')
     
     # Set titles and labels with units
     plt.title('Oxygen Concentration vs Distance')
