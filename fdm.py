@@ -13,7 +13,7 @@ v0 = 3.5           # Initial condition coefficient
 u0 = 200              # Source term coefficient
 D0 = 0.075
 E_a = 131e3
-A_D = 0.9   # e-9
+A_D = 0.9e9   
 E_AD = 119.9e3
 R = 8.314
 
