@@ -19,18 +19,14 @@ def D(T):
 def k(T):
     return A_D * np.exp(-E_a / (R * T))
 
-# Gaussian approximation for Dirac delta function at x = 0
-def gaussian_delta(x, sigma=0.01):
-    return np.exp(-x**2 / (2 * sigma**2)) / (sigma * np.sqrt(2 * np.pi))
 
 # Source term q(x, t)
-def q(x, t, sigma=0.01):
-    delta_x = gaussian_delta(x, sigma)
-    return u0 * k(T) * np.exp(-k(T)*t) * delta_x
+def q(t):
+    return u0 * k(T) * np.exp(-k(T)*t)
 
 
 # Finite difference method for solving the PDE
-def finite_difference_v_u(x_range, t_max, nx, nt):
+def finite_difference_v(x_range, t_max, nx, nt):
     # Spatial and time step sizes
     x_min, x_max = x_range
     dx = (x_max - x_min) / (nx - 1)  # Spatial step size
@@ -42,13 +38,8 @@ def finite_difference_v_u(x_range, t_max, nx, nt):
     # Initialize v(x, t) array
     v = np.zeros((nx, nt))
     # Set initial condition at t = 0
-    v[:, 0] = v0 * gaussian_delta(x_values)
-
-    # Initialize u(x, t) array
-    u = np.zeros((nx, nt))
-    # Initial condition at t = 0
-    u[:, 0] = 0  # Initialize all to 0
-    u[0, 0] = 0.1381 # Concentrate all initial oxygen at the first grid point (x = 0)
+    #v[:, 0] = v0 * gaussian_delta(x_values)
+    v[0,0] = v0
 
     # Time stepping loop
     for n in range(0, nt - 1):
@@ -56,19 +47,40 @@ def finite_difference_v_u(x_range, t_max, nx, nt):
         for i in range(1, nx - 1):  # Skip boundary points
             # Finite difference update rule for interior points
             v[i, n+1] = v[i, n] + (D_t * dt / dx**2) * (v[i+1, n] - 2 * v[i, n] + v[i-1, n])
-            u[i, n+1] = u[i, n] + (D_t * dt / dx**2) * (u[i+1, n] - 2 * u[i, n] + u[i-1, n]) + q(x_values[i], n*dt, T) * dt
-
         
         # Apply zero-flux boundary conditions
         v[0, n+1] = v[1, n+1]  # Left boundary
         v[-1, n+1] = v[-2, n+1]  # Right boundary
+    
+    return v, x_values
+
+def finite_difference_u(x_range, t_max, nx, nt):
+# Spatial and time step sizes
+    x_min, x_max = x_range
+    dx = (x_max - x_min) / (nx - 1)  # Spatial step size
+    dt = t_max / nt  # Time step size
+    
+    # Discretize the spatial domain
+    x_values = np.linspace(x_min, x_max, nx)
+
+    # Initialize u(x, t) array
+    u = np.zeros((nx, nt))
+    # Initial condition at t = 0
+    u[0, 0] = u0 * k(T) # Concentrate all initial oxygen at the first grid point (x = 0)
+
+    # Time stepping loop
+    for n in range(0, nt - 1):
+        D_t = D(T)  # Assume constant temperature for now
+        for i in range(1, nx - 1):  # Skip boundary points
+            # Finite difference update rule for interior points
+            u[i, n+1] = u[i, n] + (D_t * dt / dx**2) * (u[i+1, n] - 2 * u[i, n] + u[i-1, n]) + q(n*dt) * dt
 
         # Boundary condition at x = 0 (apply source term)
-        u[0, n+1] = u0 * k(T) * np.exp(-k(T) * (n+1) * dt)
+        u[0, n+1] = u[1,n] + (D_t * dt / dx**2) * (u[2, n] - 2 * u[1, n] + u[0, n]) + q(n*dt) * dt
         # Boundary condition at x = x_max (Dirichlet condition: u -> 0 as x -> infinity)
         u[-1, n+1] = 0  # Dirichlet condition at the right boundary
     
-    return v, u, x_values
+    return u, x_values
 
 
 def analytic_v(x,t):
@@ -109,12 +121,13 @@ def main():
     # Define simulation parameters
     x_range = (0, 300)  # Spatial domain in nm
     t_max = 45*3600  # Maximum time in seconds
-    nx = 200 # Number of spatial points
-    nt = 69082  # Number of time steps
+    nx = 150 # Number of spatial points
+    nt = 1297 # Number of time steps (200, 69082 for v(x,t) w/ v[:,0] = v0 * gaussian_delta(x_values))
     t_values = [45*3600]  # Plot at 45h
 
     # Run the finite difference method simulation
-    v, u, x_values = finite_difference_v_u(x_range, t_max, nx, nt)  
+    v, x_values = finite_difference_v(x_range, t_max, nx, nt)  
+    u, x_values = finite_difference_u(x_range, t_max, nx, nt)
     # Plot the v(x,t) and u(x,t) profiles
     plot_concentrations(v, u, x_values, t_values, t_max / nt)
 
