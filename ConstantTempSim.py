@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 v0 = 10          # Initial condition coefficient
 u0 = 1000              # Source term coefficient
 D0 = 0.0138
-E_a = 131e3
-A_D = 0.9e9   
+E_a = 135e3
+A_D = 3e9   
 E_AD = 111.53e3
 R = 8.314
 T = 418.15    # 280C = 553.15K
