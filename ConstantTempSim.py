@@ -12,6 +12,10 @@ E_AD = 111.53e3
 R = 8.314
 T = 418.15    # 280C = 553.15K
 
+# Gaussian approximation for Dirac delta function at x = 0
+def gaussian_delta(x, sigma=0.01):
+    return np.exp(-x**2 / (2 * sigma**2)) / (sigma * np.sqrt(2 * np.pi))
+
 def D(T):
     nmpercm = 1e7
     return nmpercm **2 * D0 * np.exp(-E_AD / (R * T)) 
@@ -29,51 +33,76 @@ def u(x,t):
 def u_integrand(s, t, x):
     return (u0 * k(T) * np.exp(-k(T) * t) / np.sqrt(np.pi * D(T) * (t - s))) * np.exp(-x**2 / (4 * D(T) * (t - s)))
 
-
-
 def c(x, t):
     return u(x,t) + v(x,t)
 
-def plot_oxygen_concentration(x_range, t_values):
+
+def plot_oxygen_concentration(ax, x_range, t_values):
     """
     Plots oxygen concentration vs distance for a given range of distances and multiple time values.
     
     Parameters:
+        ax: The axis to plot on (for subplots).
         x_range (tuple): A tuple of the form (min_x, max_x) defining the range of distances (in nm).
         t_values (list): A list of time values at which to calculate the oxygen concentration (in seconds).
     """
     x_values = np.linspace(x_range[0], x_range[1], 1000)  # Distance range
     
-    
-    plt.figure(figsize=(10, 6))
-    
     for t_value in t_values:
         concentration_values = [c(x, t_value) for x in x_values]
-        plt.plot(x_values, concentration_values, label=f't={t_value/3600:.1f} h')
-        plt.plot(x_values, [u(x, t_value) for x in x_values], label=f'u(x,t), t={t_value/3600:.1f} h')
-        plt.plot(x_values, v(x_values, t_value) , label=f'v(x,t), t={t_value/3600:.1f} h')
+        ax.plot(x_values, concentration_values, label=f't={t_value / 3600:.1f} h')
     
     # Set titles and labels with units
-    plt.title('Oxygen Concentration vs Distance')
-    plt.xlabel('Distance (x) [nm]')
-    plt.ylabel('Oxygen Concentration (at. %)')
-    
-    # Set y-axis limits dynamically based on all concentration values
-    plt.ylim(0, plt.ylim()[1] * 1.1)  # Adjust y-axis limits
+    ax.set_title('Oxygen Concentration vs Distance')
+    ax.set_xlabel('Distance (nm)')
+    ax.set_ylabel('Oxygen Concentration (at. %)')
+    ax.legend()
+    ax.grid()
 
-    plt.legend()
-    plt.grid()
+def plot_colormesh_and_concentration(x_range, t_range, t_values):
+    """
+    Generates two subplots: one with a pcolormesh plot for oxygen concentration as a function of time and distance,
+    and another with oxygen concentration vs distance for specific times.
+    
+    Parameters:
+        x_range (tuple): A tuple of the form (min_x, max_x) defining the range of distances (in nm).
+        t_range (tuple): A tuple of the form (min_t, max_t) defining the range of time values (in seconds).
+        t_values (list): A list of time values at which to calculate the oxygen concentration (in seconds).
+    """
+    # Create figure with two subplots side by side
+    fig, axs = plt.subplots(1, 2, figsize=(14, 6))
+
+    # First subplot: pcolormesh plot
+    x_values = np.linspace(x_range[0], x_range[1], 100)  # Distance range
+    t_values_colormesh = np.linspace(t_range[0], t_range[1], 100)  # Time range in seconds
+    X, T = np.meshgrid(x_values, t_values_colormesh)
+    
+    concentration_matrix = np.vectorize(c)(X, T)
+
+    mesh = axs[0].pcolormesh(X, T / 3600, concentration_matrix, shading='auto', cmap='jet', vmin=0, vmax=0.3)  # Colorbar limits from 0 to 0.3
+    fig.colorbar(mesh, ax=axs[0], label='Oxygen Concentration (at. %)')
+
+    # Set titles and labels for the colormesh plot
+    axs[0].set_title('Oxygen Concentration as a Function of Distance and Time')
+    axs[0].set_xlabel('Distance (nm)')
+    axs[0].set_ylabel('Time (hours)')
+
+    # Second subplot: Oxygen concentration vs distance
+    plot_oxygen_concentration(axs[1], x_range, t_values)  # Plot on the second axis
+
+    # Adjust layout to prevent overlap
+    plt.tight_layout()
+
+    # Show the combined plot
     plt.show()
 
-
 def main():
-    plot_oxygen_concentration((0, 300), [45*3600])
-    # print(D(T))
-    # print(k(T))
-    # print(v(0, 1))
-    # print(quad(test_integrand, 0, 1, args=(1, 0)))  
-
-
+    x_range = (0, 300)  # Distance range in nm
+    t_range = (0, 45 * 3600)  # Time range in seconds (up to 45 hours)
+    t_values = [5 * 3600, 15 * 3600, 30 * 3600, 45 * 3600]  # Time values to plot in seconds
+    
+    # Plot both the colormesh and the concentration vs distance plots
+    plot_colormesh_and_concentration(x_range, t_range, t_values)
 
 if __name__ == "__main__":
-    main()  
+    main()

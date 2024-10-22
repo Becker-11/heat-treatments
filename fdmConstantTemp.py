@@ -132,8 +132,8 @@ def main():
     # Define simulation parameters
     x_range = (0, 300)  # Spatial domain in nm
     t_max = 45*3600  # Maximum time in seconds
-    nx = 200 # Number of spatial points (150, 1297 for v[0,0] = v0)
-    nt = 69082 # Number of time steps (200, 69082 for v(x,t) w/ v[:,0] = v0 * gaussian_delta(x_values))
+    nx = 250 # Number of spatial points (150, 1297 for v[0,0] = v0)
+    nt = 90000 # Number of time steps (200, 69082 for v(x,t) w/ v[:,0] = v0 * gaussian_delta(x_values))
     t_values = [45*3600]  # Plot at 45h
 
     # Run the finite difference method simulation
