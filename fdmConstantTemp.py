@@ -77,9 +77,10 @@ def fdm_u_v(x_range, t_max, nx, nt):
     
     # Set initial conditions at t = 0
     v[:, 0] = v0 * gaussian_delta(x_values)
-    u[0, :] = u0 * k(T) * np.exp(-k(T) * t_values)
 
+    #u[0, :] = u0 * k(T) * np.exp(-k(T) * t_values)
     #u[0, :] = q(0, t_values * dt)
+    #u[0,0] = u0 * k(T)
     #u[:, 0] = u0 * k(T) * gaussian_delta(0)
 
     # Precompute constant to avoid recalculating each step
@@ -90,18 +91,20 @@ def fdm_u_v(x_range, t_max, nx, nt):
     for n in range(0, nt - 1):
         # Vectorized update for all interior points (no loop needed)
         v[1:-1, n+1] = v[1:-1, n] + coeff_v * (v[2:, n] - 2 * v[1:-1, n] + v[:-2, n])
-        #u[1:-1, n+1] = u[1:-1, n] + coeff_u * (u[2:, n] - 2 * u[1:-1, n] + u[:-2, n]) + q(x_values[1:-1], n*dt) * dt
-        u[1:-1, n+1] = u[1:-1, n] + coeff_u * (u[2:, n] - 2 * u[1:-1, n] + u[:-2, n]) + q(x_values[1:-1], n) * dt
+        u[1:-1, n+1] = u[1:-1, n] + coeff_u * (u[2:, n] - 2 * u[1:-1, n] + u[:-2, n]) + q(x_values[1:-1], n * dt) * dt
 
+        # Apply source term
+        #u[0, n+1] = u[0, n]  + q(x_values[0], (n+1)) * dt
 
-        # Apply boundary conditions at x = 0 (source term for u)
+        # Apply boundary conditions at x = 0 
         v[0, n+1] = v[1, n+1]  # Zero-flux boundary for v
-        #u[0, n+1] = u[0, n+1] + q(x_values[0], (n+1) * dt) * dt
-        u[0, n+1] = u[0, n] + coeff_u * (u[1, n] - 2 * u[0, n] + u[-1, n]) + q(x_values[0], n*dt) * dt
+        #u[0, n+1] = u[0, n] + coeff_u * (u[1, n] - 2 * u[0, n] + u[-1, n]) + q(x_values[0], n * dt) * dt
+        u[0, n+1] = u[0, n] + q(x_values[0], n*dt) * dt
 
-        # Boundary condition at x = x_max (Dirichlet condition: u -> 0 as x -> infinity)
-        #v[-1, n+1] = v[-2, n+1]  # Zero-flux boundary for v
-        #u[-1, n+1] = 0  # Dirichlet condition for u at the right boundary
+
+        # Boundary condition at x = x_max 
+        v[-1, n+1] = 0 # Zero-flux boundary for v
+        u[-1, n+1] = 0  # Dirichlet condition for u at the right boundary
     
     return u, v, x_values
 
@@ -199,6 +202,8 @@ def main():
     # Calculate and print execution time
     execution_time = end_time - start_time
     print(f"Simulation completed in {execution_time:.2f} seconds.")
+
+
 
 if __name__ == "__main__":
     main()
