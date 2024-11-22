@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from scipy.sparse import diags
 from scipy.integrate import quad
 from scipy.sparse.linalg import spsolve
+#from temperature_generator import TemperatureGenerator
 
 import time
 
@@ -70,19 +71,19 @@ def construct_matrices(sigma_c, nx):
     main_diag[-1] = 1 + sigma_c
 
     #Create sparse matrices
-    A_c = diags([main_diag, lower_diag, upper_diag], [0, -1, 1], format='csc')
+    A_c_sparse = diags([main_diag, lower_diag, upper_diag], [0, -1, 1], format='csc')
 
-    # A_c = np.diagflat([-sigma_c for i in range(nx-1)], -1) +\
-    # np.diagflat([1.+sigma_c]+[1.+2.*sigma_c for i in range(nx-2)]+[1.+sigma_c]) +\
-    # np.diagflat([-sigma_c for i in range(nx-1)], 1)
+    A_c = np.diagflat([-sigma_c for i in range(nx-1)], -1) +\
+    np.diagflat([1.+sigma_c]+[1.+2.*sigma_c for i in range(nx-2)]+[1.+sigma_c]) +\
+    np.diagflat([-sigma_c for i in range(nx-1)], 1)
 
-    # print("Dense A_c:")
-    # print(A_c)
+    print("Dense A_c:")
+    print(A_c)
 
-    # print("Sparse A_c (converted to dense):")
-    # print(A_c_sparse.toarray())
+    print("Sparse A_c (converted to dense):")
+    print(A_c_sparse.toarray())
 
-    # print(np.allclose(A_c, A_c_sparse.toarray()))
+    print(np.allclose(A_c, A_c_sparse.toarray()))
 
 
     # Construct B_c 
@@ -177,6 +178,13 @@ def main():
 
     C, x_grid = crank_nicolson(L, nx, tf, nt)
     plot_concentrations(C, x_grid, tf)
+
+    # create the generator
+    #T = TemperatureGenerator("heating_instructions.yaml")
+    #print(T.t_max)
+
+    # times to calculate temperature at
+    #t = np.linspace(0, T.t_max, 1000)
 
     
     

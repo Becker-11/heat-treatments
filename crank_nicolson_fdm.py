@@ -79,7 +79,7 @@ class CrankNicolsonFdm:
 
             rhs = self.B_c.dot(self.C) + self.dt * q
 
-            # Solve the linear system
+            # Solve the linear systems
             self.C = spsolve(self.A_c, rhs)
 
             self.C_record[t, :] = self.C

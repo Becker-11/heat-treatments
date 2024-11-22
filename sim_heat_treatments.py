@@ -3,13 +3,9 @@ import matplotlib.pyplot as plt
 from scipy.integrate import quad
 
 from crank_nicolson_fdm import CrankNicolsonFdm
+from temperature_generator import TemperatureGenerator
 
 
-# Define parameters and functions
-L = 300.0     # Spatial domain in nm
-nx = 830      # Number of spatial points
-tf = 45*3600  # Final time in seconds
-nt = 6000     # Number of time steps
 
 # Model parameters (example values)
 v0 = 10
@@ -19,7 +15,7 @@ E_a = 131e3
 A_D = 0.9e9   
 E_AD = 111.53e3
 R = 8.314
-T = 418.15    # Temperature in Kelvin
+#T = 418.15    # Temperature in Kelvin
 
 def gaussian_delta(x, sigma=0.001, n=6):
     A = 1 / (sigma * np.sqrt(2 * np.pi))  
@@ -77,6 +73,16 @@ def plot_concentrations(C, x_grid, tf):
 
 
 def main():
+
+    # Define parameters and functions
+    L = 300.0     # Spatial domain in nm
+    nx = 830      # Number of spatial points
+    tf = 45*3600  # Final time in seconds
+    nt = 6000     # Number of time steps
+
+    T = TemperatureGenerator("heating_instructions.yaml")
+    tf = T.t_max * 3600
+
     # Create an instance of the solver
     fdm_solver = CrankNicolsonFdm(L=L, nx=nx, tf=tf, nt=nt, D=D, q=q, v0=v0, T=T)
 

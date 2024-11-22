@@ -4,7 +4,7 @@ import pandas as pd
 from scipy.optimize import curve_fit
 
 # Load the CSV file
-df = pd.read_csv('Data/324tT.csv')
+df = pd.read_csv('../Data/324tT.csv')
 time = df['time'].values / 3600  # Convert time from seconds to hours
 temperature = df['temperature'].values
 
@@ -101,6 +101,8 @@ plt.title('Temperature Data with Piecewise Fit')
 plt.grid(True)
 plt.show()
 
+print(max(temperature))
+print(max(time))
 # Print the optimized parameters for each section
 print(f"Linear Fit 1 (before increase): m = {popt1[0]:.2f}, c = {popt1[1]:.2f}")
 print(f"Linear Fit 2 (between increase and decrease): m = {popt2[0]:.2f}, c = {popt2[1]:.2f}")
