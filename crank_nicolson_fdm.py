@@ -3,6 +3,7 @@ from scipy.sparse import diags
 from scipy.sparse.linalg import spsolve
 import time
 
+
 class CrankNicolsonFdm:
     def __init__(self, L, nx, tf, nt, D, q, v0, T):
         """
@@ -13,9 +14,10 @@ class CrankNicolsonFdm:
         nx (int): Number of spatial grid points.
         tf (float): Final time.
         nt (int): Number of time steps.
-        D (float): Diffusion coefficient (assumed constant).
-        q (callable): Function q(x, t) returning the source term at position x and time t.
+        D (callable): Function D(T) returning the diffusion coefficient at temperature T.
+        q (callable): Function q(x, t, T) returning the source term at position x and time t.
         v0 (float): Initial concentration coefficient.
+        T (callable): Function T(t) returning the temperature at time t.
         """
         # Assign parameters
         self.L = L
@@ -33,24 +35,17 @@ class CrankNicolsonFdm:
         self.dt = tf / (nt - 1)
         self.t_grid = np.linspace(0, tf, nt)
 
-        # Compute sigma_c
-        self.sigma_c = D(T) * self.dt / (2 * self.dx ** 2)
-
         # Initialize concentration using v0 and gaussian_delta
         self.C = self.v0 * self.gaussian_delta(self.x_grid)
         self.C_record = np.zeros((self.nt, self.nx))
         self.C_record[0, :] = self.C
 
-        # Construct matrices
-        self.A_c, self.B_c = self.construct_matrices()
-
     def gaussian_delta(self, x, sigma=0.001, n=6):
         A = 1 / (sigma * np.sqrt(2 * np.pi))  
         return A * np.exp(-((x / sigma) ** (2 * n)))
 
-    def construct_matrices(self):
+    def construct_matrices(self, sigma_c):
         nx = self.nx
-        sigma_c = self.sigma_c
 
         main_diag = np.full(nx, 1 + 2 * sigma_c)
         lower_diag = np.full(nx - 1, -sigma_c)
@@ -75,12 +70,23 @@ class CrankNicolsonFdm:
         start_time = time.time()
 
         for t in range(1, self.nt):
-            q = self.q(self.x_grid, self.t_grid[t])
+            # time_in_hours = self.t_grid[t] / 3600.0
+            # T_current = self.T(time_in_hours)
+            # D_current = self.D(T_current)
+            # sigma_c = D_current * self.dt / (2 * self.dx ** 2)
 
-            rhs = self.B_c.dot(self.C) + self.dt * q
+            T_current = 418
+            sigma_c = self.D(T_current) * self.dt / (2 * self.dx **2)
+
+            # Reconstruct matrices A_c and B_c with current sigma_c
+            A_c, B_c = self.construct_matrices(sigma_c)
+
+            q = self.q(self.x_grid, self.t_grid[t], T_current)
+
+            rhs = B_c.dot(self.C) + self.dt * q
 
             # Solve the linear systems
-            self.C = spsolve(self.A_c, rhs)
+            self.C = spsolve(A_c, rhs)
 
             self.C_record[t, :] = self.C
 

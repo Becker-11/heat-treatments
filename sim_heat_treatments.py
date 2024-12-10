@@ -28,39 +28,39 @@ def D(T):
 def k(T):
     return A_D * np.exp(-E_a / (R * T))
 
-def q(x, t):
+def q(x, t, T):
     return u0 * k(T) * np.exp(-k(T)*t) * gaussian_delta(x)
 
-def analytic_v(x,t):
-    return (v0 / np.sqrt(np.pi * D(T) * t)) * np.exp(-x**2 / (4 * D(T) * t))
+# def analytic_v(x,t):
+#     return (v0 / np.sqrt(np.pi * D(T) * t)) * np.exp(-x**2 / (4 * D(T) * t))
 
-def analytic_u(x,t):
-    int_val, err = quad(u_integrand, 0, t, args=(t, x), epsabs=1e-10, epsrel=1e-10)
-    return int_val
+# def analytic_u(x,t):
+#     int_val, err = quad(u_integrand, 0, t, args=(t, x), epsabs=1e-10, epsrel=1e-10)
+#     return int_val
 
-def u_integrand(s, t, x):
-    return (u0 * k(T) * np.exp(-k(T) * t) / np.sqrt(np.pi * D(T) * (t - s))) * np.exp(-x**2 / (4 * D(T) * (t - s)))
+# def u_integrand(s, t, x):
+#     return (u0 * k(T) * np.exp(-k(T) * t) / np.sqrt(np.pi * D(T) * (t - s))) * np.exp(-x**2 / (4 * D(T) * (t - s)))
 
-def analytic_c(x, t):
-    return analytic_u(x,t) + analytic_v(x, t)  
+# def analytic_c(x, t):
+#     return analytic_u(x,t) + analytic_v(x, t)  
 
 # Plotting function for the solutions
 def plot_concentrations(C, x_grid, tf):
     plt.figure(figsize=(10, 6))
 
-    a_u = [analytic_u(x, tf) for x in x_grid]
-    a_v = analytic_v(x_grid, tf)
-    a_c = a_u + a_v
+    # a_u = [analytic_u(x, tf) for x in x_grid]
+    # a_v = analytic_v(x_grid, tf)
+    # a_c = a_u + a_v
 
-    print(C[0])
-    print(a_c[0])
+    # print(C[0])
+    # print(a_c[0])
 
-    # Plot for v(x,t)
-    plt.plot(x_grid, a_v, label=f'analytic v(x,t), t={tf/3600:.1f} h')
-    # Plot for u(x,t)
-    plt.plot(x_grid, a_u, label=f'analytic u(x,t), t={tf/3600:.1f} h')
-    # Combine u(x,t) and v(x,t) for c(x,t)
-    plt.plot(x_grid, a_c, label=f'analytic c(x,t), t={tf/3600:.1f} h')
+    # # Plot for v(x,t)
+    # plt.plot(x_grid, a_v, label=f'analytic v(x,t), t={tf/3600:.1f} h')
+    # # Plot for u(x,t)
+    # plt.plot(x_grid, a_u, label=f'analytic u(x,t), t={tf/3600:.1f} h')
+    # # Combine u(x,t) and v(x,t) for c(x,t)
+    # plt.plot(x_grid, a_c, label=f'analytic c(x,t), t={tf/3600:.1f} h')
     plt.plot(x_grid, C, alpha=0.7, linestyle='--', label=f'fdm c(x,t), t={tf/3600:.1f} h')
 
     # Set titles and labels with unitsd
