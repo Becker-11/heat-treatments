@@ -31,6 +31,9 @@ def k(T):
 def q(x, t, T):
     return u0 * k(T) * np.exp(-k(T)*t) * gaussian_delta(x)
 
+def q2(t,T):
+    return u0 * k(T) * np.exp(-k(T)*t)
+
 # def analytic_v(x,t):
 #     return (v0 / np.sqrt(np.pi * D(T) * t)) * np.exp(-x**2 / (4 * D(T) * t))
 
@@ -75,16 +78,17 @@ def plot_concentrations(C, x_grid, tf):
 def main():
 
     # Define parameters and functions
-    L = 300.0     # Spatial domain in nm
-    nx = 830      # Number of spatial points
-    tf = 45*3600  # Final time in seconds
-    nt = 6000     # Number of time steps
+    L = 1000.0     # Spatial domain in nm
+    nx = 10001      # Number of spatial points
+    tf = 12*3600  # Final time in seconds
+    nt = 4001     # Number of time steps
 
-    T = TemperatureGenerator("heating_instructions.yaml")
-    tf = T.t_max * 3600
+    #T = TemperatureGenerator("heating_instructions.yaml")
+    T = 273.15 + 120
+    tf = 12 * 3600
 
     # Create an instance of the solver
-    fdm_solver = CrankNicolsonFdm(L=L, nx=nx, tf=tf, nt=nt, D=D, q=q, v0=v0, T=T)
+    fdm_solver = CrankNicolsonFdm(L=L, nx=nx, tf=tf, nt=nt, D=D, q=q2, v0=v0, T=T)
 
     # Run the solver
     fdm_solver.crank_nicolson()

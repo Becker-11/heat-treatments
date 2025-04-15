@@ -36,7 +36,8 @@ class CrankNicolsonFdm:
         self.t_grid = np.linspace(0, tf, nt)
 
         # Initialize concentration using v0 and gaussian_delta
-        self.C = self.v0 * self.gaussian_delta(self.x_grid)
+        self.C = np.zeros(self.x_grid.size)
+        self.C[0] = self.v0 / self.dx
         self.C_record = np.zeros((self.nt, self.nx))
         self.C_record[0, :] = self.C
 
@@ -81,9 +82,11 @@ class CrankNicolsonFdm:
             # Reconstruct matrices A_c and B_c with current sigma_c
             A_c, B_c = self.construct_matrices(sigma_c)
 
-            q = self.q(self.x_grid, self.t_grid[t], T_current)
+            #q = self.q(self.x_grid, self.t_grid[t], T_current) / self.dx
+            q = np.zeros(self.x_grid.size)
+            q[0] = self.dt * self.q(self.t_grid[t], T_current) / self.dx 
 
-            rhs = B_c.dot(self.C) + self.dt * q
+            rhs = B_c.dot(self.C) + q
 
             # Solve the linear systems
             self.C = spsolve(A_c, rhs)

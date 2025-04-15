@@ -79,7 +79,7 @@ def plot_colormesh_and_concentration(x_range, t_range, t_values):
     
     concentration_matrix = np.vectorize(c)(X, T)
 
-    mesh = axs[0].pcolormesh(X, T / 3600, concentration_matrix, shading='auto', cmap='jet', vmin=0, vmax=0.3)  # Colorbar limits from 0 to 0.3
+    mesh = axs[0].pcolormesh(X, T / 3600, concentration_matrix, shading='auto', cmap='viridis', vmin=0, vmax=0.3)  # Colorbar limits from 0 to 0.3
     fig.colorbar(mesh, ax=axs[0], label='Oxygen Concentration (at. %)')
 
     # Set titles and labels for the colormesh plot
